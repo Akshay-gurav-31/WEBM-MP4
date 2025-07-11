@@ -1,129 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>WEBM to MP4 Converter</title>
-  <style>
-    body {
-      background-color: #0b1b2a;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WEBM to MP4 Converter</title>
+<style>
+  /* Reset */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-    h1 {
-      color: #ff69b4;
-      animation: blink 1.5s infinite alternate;
-    }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0B2343; /* navy dark */
+    color: #F3E8F1; /* very light pinkish */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
 
-    @keyframes blink {
-      from { opacity: 1; }
-      to { opacity: 0.6; }
-    }
+  .container {
+    background: #172A4E; /* a bit lighter navy */
+    padding: 40px 50px;
+    border-radius: 12px;
+    box-shadow: 0 12px 25px rgba(11, 35, 67, 0.7);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+  }
 
-    .container {
-      background-color: #142d4c;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 20px #ff69b4;
-      text-align: center;
-    }
+  h1 {
+    margin-bottom: 25px;
+    font-weight: 700;
+    font-size: 1.8rem;
+    letter-spacing: 1.1px;
+  }
 
-    input[type="file"] {
-      margin: 10px;
-      background: #fff;
-      color: #000;
-      border-radius: 5px;
-    }
+  input[type="file"] {
+    border: 2px solid #FF91B3; /* pink */
+    border-radius: 8px;
+    padding: 10px 15px;
+    width: 100%;
+    color: #F3E8F1;
+    background: #0B2343;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
 
-    button {
-      background-color: #ff69b4;
-      border: none;
-      padding: 10px 20px;
-      color: white;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+  input[type="file"]:focus,
+  input[type="file"]:hover {
+    border-color: #FF5A7E;
+    outline: none;
+  }
 
-    button:hover {
-      background-color: #ff1493;
-    }
+  button {
+    margin-top: 30px;
+    background-color: #FF5A7E; /* bright pink */
+    border: none;
+    padding: 12px 25px;
+    color: #F3E8F1;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 6px 12px rgba(255, 90, 126, 0.6);
+  }
 
-    .message {
-      margin-top: 15px;
-      font-weight: bold;
-    }
+  button:hover {
+    background-color: #FF3D6F;
+    box-shadow: 0 10px 20px rgba(255, 61, 111, 0.8);
+  }
 
-    .error {
-      color: #ff4c4c;
-    }
+  .status {
+    margin-top: 25px;
+    font-size: 1rem;
+    min-height: 24px;
+    color: #FF91B3;
+    font-weight: 600;
+  }
 
-    .success {
-      color: #6aff73;
-    }
-  </style>
+  /* Scrollbar for container if needed */
+  .container::-webkit-scrollbar {
+    width: 6px;
+  }
+  .container::-webkit-scrollbar-thumb {
+    background-color: #FF5A7E;
+    border-radius: 3px;
+  }
+</style>
 </head>
 <body>
   <div class="container">
     <h1>WEBM to MP4 Converter</h1>
-    <input type="file" id="videoFile" accept="video/webm" />
-    <br />
-    <button onclick="uploadAndConvert()">Convert to MP4</button>
-    <div class="message" id="messageBox"></div>
+    <input type="file" id="fileInput" accept="video/webm" />
+    <button id="convertBtn" disabled>Convert to MP4</button>
+    <div class="status" id="status"></div>
   </div>
 
   <script>
-    function uploadAndConvert() {
-      const fileInput = document.getElementById('videoFile');
-      const messageBox = document.getElementById('messageBox');
-      const file = fileInput.files[0];
+    const fileInput = document.getElementById('fileInput');
+    const convertBtn = document.getElementById('convertBtn');
+    const status = document.getElementById('status');
 
-      if (!file) {
-        messageBox.innerHTML = '❌ Please select a WEBM file.';
-        messageBox.className = 'message error';
-        return;
-      }
+    fileInput.addEventListener('change', () => {
+      status.textContent = '';
+      convertBtn.disabled = !fileInput.files.length;
+    });
 
+    convertBtn.addEventListener('click', () => {
+      if (!fileInput.files.length) return;
+      status.style.color = '#FF91B3';
+      status.textContent = 'Converting... Please wait.';
+      
       const formData = new FormData();
-      formData.append('file', file);
-
-      messageBox.innerHTML = '⏳ Converting...';
-      messageBox.className = 'message';
+      formData.append('file', fileInput.files[0]);
 
       fetch('/convert', {
         method: 'POST',
-        body: formData
+        body: formData,
       })
       .then(async (res) => {
         if (!res.ok) {
           const error = await res.json();
-          throw new Error(error.error || 'Unknown error');
+          throw new Error(error.error || 'Conversion failed');
         }
         return res.blob();
       })
       .then(blob => {
+        status.style.color = '#9BE564'; // subtle green
+        status.textContent = 'Conversion successful! Download starting...';
+
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = 'converted.mp4';
+        document.body.appendChild(a);
         a.click();
+        a.remove();
         window.URL.revokeObjectURL(url);
-        messageBox.innerHTML = '✅ Conversion successful. Download started!';
-        messageBox.className = 'message success';
       })
       .catch(err => {
-        console.error(err);
-        messageBox.innerHTML = '❌ Error: ' + err.message;
-        messageBox.className = 'message error';
+        status.style.color = '#FF5A5A'; // red for error
+        status.textContent = err.message;
       });
-    }
+    });
   </script>
 </body>
 </html>
