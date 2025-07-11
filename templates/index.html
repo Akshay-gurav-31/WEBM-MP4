@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WEBM to MP4 Converter</title>
+  <style>
+    body {
+      background-color: #0b1b2a;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      color: #ff69b4;
+      animation: blink 1.5s infinite alternate;
+    }
+
+    @keyframes blink {
+      from { opacity: 1; }
+      to { opacity: 0.6; }
+    }
+
+    .container {
+      background-color: #142d4c;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px #ff69b4;
+      text-align: center;
+    }
+
+    input[type="file"] {
+      margin: 10px;
+      background: #fff;
+      color: #000;
+      border-radius: 5px;
+    }
+
+    button {
+      background-color: #ff69b4;
+      border: none;
+      padding: 10px 20px;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #ff1493;
+    }
+
+    .message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    .error {
+      color: #ff4c4c;
+    }
+
+    .success {
+      color: #6aff73;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>WEBM to MP4 Converter</h1>
+    <input type="file" id="videoFile" accept="video/webm" />
+    <br />
+    <button onclick="uploadAndConvert()">Convert to MP4</button>
+    <div class="message" id="messageBox"></div>
+  </div>
+
+  <script>
+    function uploadAndConvert() {
+      const fileInput = document.getElementById('videoFile');
+      const messageBox = document.getElementById('messageBox');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        messageBox.innerHTML = '❌ Please select a WEBM file.';
+        messageBox.className = 'message error';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      messageBox.innerHTML = '⏳ Converting...';
+      messageBox.className = 'message';
+
+      fetch('/convert', {
+        method: 'POST',
+        body: formData
+      })
+      .then(async (res) => {
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || 'Unknown error');
+        }
+        return res.blob();
+      })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'converted.mp4';
+        a.click();
+        window.URL.revokeObjectURL(url);
+        messageBox.innerHTML = '✅ Conversion successful. Download started!';
+        messageBox.className = 'message success';
+      })
+      .catch(err => {
+        console.error(err);
+        messageBox.innerHTML = '❌ Error: ' + err.message;
+        messageBox.className = 'message error';
+      });
+    }
+  </script>
+</body>
+</html>
